@@ -114,11 +114,10 @@ export default {
       })
         .then((AMap) => {
           this.map = new AMap.Map("container", {
-            //设置地图容器id
-            zoom: 1, //初始化地图级别
+            zoom: 1, 
             lang: "en",
             resizeEnable: true,
-            center: [116.35, 39.89], //初始化地图中心点位置
+            center: [116.35, 39.89], 
           });
 
           this.addmark();
@@ -212,7 +211,6 @@ export default {
       this.formInline.date = this.date + "";
       this.initMap();
     },
-    //点击上传方法
     uploadFile(param) {
       debugger
       this.loading = this.$loading({
