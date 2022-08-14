@@ -8,34 +8,49 @@
         width: 100%;
       ">
       <el-form :inline="true" size="mini" :model="formInline" class="demo-form-inline">
+
+
         <el-form-item>
-          <span>Date：</span>
+          date:
           <el-date-picker v-model="date" type="daterange" range-separator="--" value-format="yyyy-MM-dd"
             start-placeholder="startDate" end-placeholder="endDate">
           </el-date-picker>
         </el-form-item>
-
-        <el-form-item label="nation">
-          <el-select v-model="formInline.nation" clearable filterable placeholder="please select">
+        <el-form-item>
+          nation:
+          <el-select v-model="formInline.nation" clearable filterable placeholder="please select nation">
             <el-option v-for="item in nations" :key="item" :label="item" :value="item">
             </el-option>
           </el-select>
         </el-form-item>
 
-        <el-form-item label="type">
-          <el-select v-model="formInline.type" clearable filterable placeholder="please select">
+
+        <el-form-item>
+          type:
+          <el-select v-model="formInline.type" clearable filterable placeholder="please select type">
             <el-option key="Earthquake" label="Earthquake" value="Earthquake"></el-option>
             <el-option key="Explosion" label="Explosion" value="Explosion"></el-option>
             <el-option key="Rock Burst" label="Rock Burst" value="Rock Burst"></el-option>
             <el-option key="Nuclear Explosion" label="Nuclear Explosion" value="Nuclear Explosion"></el-option>
           </el-select>
         </el-form-item>
-
-        <el-form-item label="depth">
-          <el-input v-model="formInline.depth" clearable placeholder="please input depth"></el-input>
+  
+        <el-form-item>
+          depth:
+          <el-input-number v-model="formInline.minDepth" :min="minDepth" :step="0.1" :max="maxDepth"  placeholder="please input min depth"></el-input-number>
         </el-form-item>
-        <el-form-item label="magnitude">
-          <el-input v-model="formInline.magnitude" clearable placeholder="please input magnitude"></el-input>
+        <el-form-item label="~">
+          <el-input-number v-model="formInline.maxDepth" :min="minDepth" :step="0.1" :max="maxDepth"  placeholder="please input max depth"></el-input-number>
+        </el-form-item>
+
+        <el-form-item>
+          magnitude:
+          <el-input-number v-model="formInline.minMagnitude" :min="minMagnitude" :step="0.1" :max="maxMagnitude"   placeholder="please input min magnitude">
+          </el-input-number>
+        </el-form-item>
+        <el-form-item label="~">
+          <el-input-number v-model="formInline.maxMagnitude" :min="minMagnitude" :step="0.1" :max="maxMagnitude"  placeholder="please input max  magnitude">
+          </el-input-number>
         </el-form-item>
 
 
@@ -70,10 +85,14 @@ export default {
       map: null,
       infoWindow: null,
       date: [],
-
       fileList: [],
-
       nations: [],
+     
+         minDepth: 0,
+        maxDepth: 0,
+      minMagnitude: 0,
+      maxMagnitude: 0,
+
       formInline: {
         date: "",
         longitude: "",
@@ -83,12 +102,17 @@ export default {
         magnitude: "",
         nation: "",
         loading: null,
+         minDepth: 0,
+        maxDepth: 0,
+      minMagnitude: 0,
+      maxMagnitude: 0,
       },
     };
   },
   mounted() {
     var that = this;
     this.getNation();
+    this.getDepthAndMagnitude();
     this.initMap();
   },
 
@@ -98,6 +122,22 @@ export default {
         this.nations = res.data;
       })
     },
+    getDepthAndMagnitude() {
+      this.$get("/earthquake/getDepthAndMagnitude", {}).then((res) => {
+        this.formInline.minDepth = res.data.minDepth
+        this.formInline.maxDepth = res.data.maxDepth
+        this.formInline.minMagnitude = res.data.minMagnitude
+        this.formInline.maxMagnitude = res.data.maxMagnitude
+
+         this.minDepth = res.data.minDepth
+        this.maxDepth = res.data.maxDepth
+        this.minMagnitude = res.data.minMagnitude
+        this.maxMagnitude = res.data.maxMagnitude
+      })
+    },
+
+
+
     initMap() {
       var that = this;
       that.loading = this.$loading({
@@ -114,10 +154,10 @@ export default {
       })
         .then((AMap) => {
           this.map = new AMap.Map("container", {
-            zoom: 1, 
+            zoom: 1,
             lang: "en",
             resizeEnable: true,
-            center: [116.35, 39.89], 
+            center: [116.35, 39.89],
           });
 
           this.addmark();
@@ -236,7 +276,7 @@ export default {
           });
           that.initMap();
           that.getNation();
-
+          that.getDepthAndMagnitude();
         } else {
           this.$message({
             message: res.data.message,
@@ -244,10 +284,10 @@ export default {
           });
         }
       }).catch(err => {
-         that.$message({
-            message: "Import error",
-            type: "error",
-          });
+        that.$message({
+          message: "Import error",
+          type: "error",
+        });
         this.fileList = [];
         that.loading.close();
       });
